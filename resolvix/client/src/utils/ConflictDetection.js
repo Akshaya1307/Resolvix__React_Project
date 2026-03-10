@@ -13,7 +13,7 @@ export const detectConflicts = (requests) => {
           conflicts.push({
             request1: sorted[i],
             request2: sorted[j],
-            resourceId, // shorthand (cleaner)
+            resourceId, // Needed here ✅
           });
         }
       }
@@ -67,7 +67,8 @@ export const optimizeAllocations = (requests) => {
   const rejected = [];
   const rescheduled = [];
 
-  for (const [resourceId, resourceRequests] of Object.entries(groupedByResource)) {
+  // 🔥 FIXED HERE — removed unused resourceId
+  for (const resourceRequests of Object.values(groupedByResource)) {
     const sorted = [...resourceRequests].sort((a, b) => {
       if (priorityValue[b.priority] !== priorityValue[a.priority]) {
         return priorityValue[b.priority] - priorityValue[a.priority];
