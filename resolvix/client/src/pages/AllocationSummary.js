@@ -5,7 +5,6 @@ const AllocationSummary = () => {
   const [allocations, setAllocations] = useState([]);
   const [rejected, setRejected] = useState([]);
   const [rescheduled, setRescheduled] = useState([]);
-  const [resources, setResources] = useState([]);
   const [utilizationStats, setUtilizationStats] = useState({});
 
   useEffect(() => {
@@ -17,7 +16,6 @@ const AllocationSummary = () => {
     setAllocations(savedAllocations);
     setRejected(savedRejected);
     setRescheduled(savedRescheduled);
-    setResources(savedResources);
     
     calculateUtilization(savedAllocations, savedResources);
   }, []);
