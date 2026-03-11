@@ -7,28 +7,33 @@ const Dashboard = () => {
   const [resources, setResources] = useState([]);
   const [conflicts, setConflicts] = useState([]);
   const [optimizedResult, setOptimizedResult] = useState(null);
-  const [view, setView] = useState('approved'); // CHANGED: from 'pending' to 'approved'
+  const [view, setView] = useState('approved');
 
   useEffect(() => {
     const savedRequests = JSON.parse(localStorage.getItem('requests')) || [];
     const savedResources = JSON.parse(localStorage.getItem('resources')) || [];
+
     setRequests(savedRequests);
     setResources(savedResources);
-    
-    // Detect conflicts
+
     const detectedConflicts = detectConflicts(savedRequests);
     setConflicts(detectedConflicts);
   }, []);
 
   const handleOptimize = () => {
     const result = optimizeAllocations(requests);
+
     setOptimizedResult(result);
-    setView('approved'); // ADDED: Reset view to 'approved' after optimization
-    
-    // Save allocations to localStorage
+    setView('approved');
+
+    // Save results
     localStorage.setItem('allocations', JSON.stringify(result.allocations));
     localStorage.setItem('rejected', JSON.stringify(result.rejected));
     localStorage.setItem('rescheduled', JSON.stringify(result.rescheduled));
+
+    // 🔥 Recalculate conflicts after optimization
+    const newConflicts = detectConflicts(result.allocations);
+    setConflicts(newConflicts);
   };
 
   const getResourceName = (resourceId) => {
@@ -43,7 +48,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard">
       <h1>Resolvix Dashboard</h1>
-      
+
       <div className="stats-cards">
         <div className="stat-card">
           <h3>Total Requests</h3>
@@ -59,6 +64,18 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* 🚀 Optimization Button - Always Visible */}
+      <div className="optimization-trigger">
+        <button
+          className="optimize-btn"
+          onClick={handleOptimize}
+          disabled={requests.length === 0}
+        >
+          🚀 Run Optimization Algorithm
+        </button>
+      </div>
+
+      {/* Conflict Section */}
       {conflicts.length > 0 && (
         <div className="conflicts-section">
           <h2>⚠️ Conflicts Detected</h2>
@@ -82,17 +99,14 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
-          
-          <button className="optimize-btn" onClick={handleOptimize}>
-            Run Optimization Algorithm
-          </button>
         </div>
       )}
 
+      {/* Optimization Results */}
       {optimizedResult && (
         <div className="optimization-result">
           <h2>📊 Optimization Results</h2>
-          
+
           <div className="result-stats">
             <div className="stat approved">
               <h4>Approved</h4>
@@ -109,23 +123,23 @@ const Dashboard = () => {
           </div>
 
           <div className="view-toggle">
-            <button 
-              className={view === 'approved' ? 'active' : ''} 
+            <button
+              className={view === 'approved' ? 'active' : ''}
               onClick={() => setView('approved')}
             >
-              Approved {optimizedResult.allocations.length > 0 && `(${optimizedResult.allocations.length})`}
+              Approved ({optimizedResult.allocations.length})
             </button>
-            <button 
-              className={view === 'rescheduled' ? 'active' : ''} 
+            <button
+              className={view === 'rescheduled' ? 'active' : ''}
               onClick={() => setView('rescheduled')}
             >
-              Rescheduled {optimizedResult.rescheduled.length > 0 && `(${optimizedResult.rescheduled.length})`}
+              Rescheduled ({optimizedResult.rescheduled.length})
             </button>
-            <button 
-              className={view === 'rejected' ? 'active' : ''} 
+            <button
+              className={view === 'rejected' ? 'active' : ''}
               onClick={() => setView('rejected')}
             >
-              Rejected {optimizedResult.rejected.length > 0 && `(${optimizedResult.rejected.length})`}
+              Rejected ({optimizedResult.rejected.length})
             </button>
           </div>
 
@@ -149,12 +163,16 @@ const Dashboard = () => {
                         <td>{req.purpose}</td>
                         <td>{req.date}</td>
                         <td>{req.startTime} - {req.endTime}</td>
-                        <td className={getPriorityClass(req.priority)}>{req.priority}</td>
+                        <td className={getPriorityClass(req.priority)}>
+                          {req.priority}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="no-data">No approved allocations</td>
+                      <td colSpan="5" className="no-data">
+                        No approved allocations
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -182,12 +200,16 @@ const Dashboard = () => {
                         <td className="suggested">
                           {req.date} {req.suggestedTime.startTime}-{req.suggestedTime.endTime}
                         </td>
-                        <td className={getPriorityClass(req.priority)}>{req.priority}</td>
+                        <td className={getPriorityClass(req.priority)}>
+                          {req.priority}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="no-data">No rescheduled allocations</td>
+                      <td colSpan="5" className="no-data">
+                        No rescheduled allocations
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -212,13 +234,17 @@ const Dashboard = () => {
                         <td>{req.resourceName}</td>
                         <td>{req.purpose}</td>
                         <td>{req.date} {req.startTime}-{req.endTime}</td>
-                        <td className={getPriorityClass(req.priority)}>{req.priority}</td>
+                        <td className={getPriorityClass(req.priority)}>
+                          {req.priority}
+                        </td>
                         <td>No available slot</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="no-data">No rejected allocations</td>
+                      <td colSpan="5" className="no-data">
+                        No rejected allocations
+                      </td>
                     </tr>
                   )}
                 </tbody>
